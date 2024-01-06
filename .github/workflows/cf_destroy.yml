@@ -3,8 +3,8 @@ name: AWS SAM Destroy
 on:
   workflow_dispatch:
     inputs:
-      sam_app_name:
-        description: 'Name of the application to destroy'
+      cf_stack_name:
+        description: 'Name of the stack to destroy'
         required: true
   push:
     paths-ignore:
@@ -15,11 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: aws-actions/setup-sam@v2
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      - run: sam delete --stack-name ${{ inputs.sam_app_name }}  --no-prompts
+      - run: aws cloudformation delete-stack --stack-name ${{ inputs.cf_stack_name }}

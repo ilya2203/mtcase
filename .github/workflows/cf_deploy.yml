@@ -1,0 +1,35 @@
+name: AWS SAM Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      sam_app_name:
+        description: 'Name of the stack to deploy'
+        required: true
+  push:
+    paths-ignore:
+      - '.github/**'
+
+jobs:
+  sam_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check sam_app_name pattern
+        run: |
+          if [[ ! "${{ github.event.inputs.sam_app_name }}" =~ ^[a-z0-9.-]+$ ]]; then
+            echo "Invalid name of stack. It should match the pattern ^[a-z0-9.-]+$"
+            exit 1
+          fi    
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: |
+          head -n10 ./CF.yaml
+          sed -i 's/\$\$STACKNAME\$\$/${{ inputs.cf_stack_name }}/g' ./CF.yaml
+          head -n10
+      # - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
