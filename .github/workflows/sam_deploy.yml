@@ -3,9 +3,8 @@ name: AWS SAM Deploy
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '**/*'
-      - '!**/*.github'
+    paths-ignore:
+      - '.github/**'
 
 jobs:
   sam_deploy:

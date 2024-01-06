@@ -3,9 +3,8 @@ name: AWS SAM Destroy
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '**/*'
-      - '!**/*.github'
+    paths-ignore:
+      - '.github/**'
 
 jobs:
   sam_deploy:
