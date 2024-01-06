@@ -3,7 +3,7 @@ name: AWS CF Deploy
 on:
   workflow_dispatch:
     inputs:
-      sam_app_name:
+      cf_stack_name:
         description: 'Name of the stack to deploy'
         required: true
   push:
