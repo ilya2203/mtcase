@@ -27,7 +27,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - run: |
-          head -n10 ./CF.yaml
-          sed -i 's/\$\$STACKNAME\$\$/${{ inputs.cf_stack_name }}/g' ./CF.yaml
-          head -n10
+          head -n10 ./CF.yaml;
+          sed -i 's/\$\$STACKNAME\$\$/${{ inputs.cf_stack_name }}/g' ./CF.yaml;
+          head -n10;
       # - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
