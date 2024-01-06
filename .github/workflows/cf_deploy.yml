@@ -14,9 +14,9 @@ jobs:
   sam_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Check sam_app_name pattern
+      - name: Check cf_stack_name pattern
         run: |
-          if [[ ! "${{ github.event.inputs.sam_app_name }}" =~ ^[a-z0-9.-]+$ ]]; then
+          if [[ ! "${{ github.event.inputs.cf_stack_name }}" =~ ^[a-z0-9.-]+$ ]]; then
             echo "Invalid name of stack. It should match the pattern ^[a-z0-9.-]+$"
             exit 1
           fi    
