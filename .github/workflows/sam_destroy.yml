@@ -1,4 +1,4 @@
-name: AWS SAM Deploy
+name: AWS SAM Destroy
 
 on:
   workflow_dispatch:
