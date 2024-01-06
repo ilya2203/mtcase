@@ -2,6 +2,10 @@ name: AWS SAM Destroy
 
 on:
   workflow_dispatch:
+    inputs:
+          sam_app_name:
+            description: 'Name of application for destroy'
+            required: true  
   push:
     paths-ignore:
       - '.github/**'
@@ -18,6 +22,4 @@ jobs:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      - run: sam delete --stack-name ${{ SAM_APP_NAME }} --no-prompts
-        with:
-          SAM_APP_NAME: ${{ github.event.inputs.sam-app-name }}
+      - run: sam delete --stack-name ${{ inputs.sam_app_name }}  --no-prompts
