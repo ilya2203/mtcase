@@ -1,4 +1,4 @@
-name: AWS CF Destroy
+name: AWS CF Deploy
 
 on:
   workflow_dispatch:
