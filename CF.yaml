@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ProjectPrefix:
+    Type: String
+    Default: temp
+    AllowedPattern: ^[a-z0-9.-]+$
+    Description: Should be the same as stack name and contains only lowercase letters and numbers.
+    ConstraintDescription: Please enter only lowercase letters for ProjectPrefix.
+  DBMasterUsername:
+    Type: String
+    Default: tempadmin
+  DBMasterPassword:
+    Type: String
+    Default: "{{resolve:ssm-secure:/temp/dbcreds/tempadmin:1}}"
+  DBPort:
+    Type: Number
+    Default: 3306
+  S3BucketName:
+    Type: String
+    Default: "bucket09122023123"
+    AllowedPattern: ^[a-z0-9.-]+$
+    ConstraintDescription: Please enter only lowercase letters for S3BucketName.   
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}
+
+  VPCRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+
+  VPCSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.0.0.0/24'
+      AvailabilityZone: 'us-west-2a'     
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}Private1
+
+  VPCSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCRouteTable
+      SubnetId: !Ref VPCSubnet1
+
+  VPCSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: '10.0.1.0/24'
+      AvailabilityZone: 'us-west-2b'     
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}Private2
+
+  VPCSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VPCRouteTable
+      SubnetId: !Ref VPCSubnet2
+
+  VPCEndpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcId: !Ref VPC
+      RouteTableIds:
+        - !Ref VPCRouteTable
+
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub ${ProjectPrefix}${S3BucketName}
+
+  DBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: 'Subnet group for RDS'
+      SubnetIds:
+        - !Ref VPCSubnet1
+        - !Ref VPCSubnet2
+
+  DBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow MySQL inbound traffic'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: '0.0.0.0/0'
+
+  DBInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Sub ${ProjectPrefix}DBInstance
+      Engine: 'Mysql'
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterPassword
+      AllocatedStorage: 5
+      DBInstanceClass: 'db.t2.micro'
+      VPCSecurityGroups:
+        - !GetAtt DBSecurityGroup.GroupId
+      AvailabilityZone: 'us-west-2a'
+      MultiAZ: false
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBName: !Sub ${ProjectPrefix}DB
+
+Outputs:
+
+  ProjectPrefixOutput:
+    Description: 'Name of project'
+    Value: !Ref ProjectPrefix
+    Export:
+      Name: !Sub "${ProjectPrefix}"
+
+  VPCIdOutput:
+    Description: 'ID of the created VPC'
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${ProjectPrefix}-VPCIdOutput"
+
+  VPCSubnet1IdOutput:
+    Description: 'ID of the created Subnet 1'
+    Value: !Ref VPCSubnet1
+    Export:
+      Name: !Sub "${ProjectPrefix}-VPCSubnet1IdOutput"
+
+  VPCSubnet2IdOutput:
+    Description: 'ID of the created Subnet 2'
+    Value: !Ref VPCSubnet2
+    Export:
+      Name: !Sub "${ProjectPrefix}-VPCSubnet2IdOutput"
+
+  DBSecurityGroupIdOutput:
+    Description: 'ID of the created DB Security Group'
+    Value: !GetAtt DBSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${ProjectPrefix}-DBSecurityGroupOutput"
+
+  DBSubnetGroupIdOutput:
+    Description: 'ID of the created DB Subnet Group'
+    Value: !Ref DBSubnetGroup
+    Export:
+      Name: !Sub "${ProjectPrefix}-DBSubnetGroupOutput"
+
+  DBEndpointOutput:
+    Description: "Endpoint for the MySQL database"
+    Value: !GetAtt DBInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${ProjectPrefix}-DBEndpointOutput"
+
+  DBUserOutput:
+    Description: "Endpoint for the MySQL database"
+    Value: !Ref DBMasterUsername
+    Export:
+      Name: !Sub "${ProjectPrefix}-DBUserOutput"
+
+  DBPortOutput:
+    Description: "Endpoint for the MySQL database"
+    Value: !Ref DBPort
+    Export:
+      Name: !Sub "${ProjectPrefix}-DBPortOutput"
+
+  S3BucketNameOutput:
+    Description: 'Name of the created S3 Bucket'
+    Value: !Ref S3Bucket
+    Export:
+      Name: !Sub "${ProjectPrefix}-S3BucketNameOutput"
+

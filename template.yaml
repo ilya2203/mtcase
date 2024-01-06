@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: AWS SAM template for Document API
+
+Parameters:
+
+  ProjectPrefix:
+    Type: String
+    Default: 'temp'
+    Description: "MUST BE THE SAME AS ProjectPrefix in CF outputs"
+
+  LambdaFunctionName:
+    Type: String
+    Default: APIHandler
+
+  MYSQLDatabase:
+    Type: String
+    Default: DBName
+
+Resources:
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub ${ProjectPrefix}LambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Sub ${ProjectPrefix}LambdaExecutionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:GetBucketTagging'
+                  - 's3:PutBucketTagging'
+                  - 's3:GetObjectVersionTagging'
+                  - 's3:ListBucketVersions'
+                  - 's3:PutObjectVersionTagging'
+                  - 's3:GetObjectTagging'
+                  - 's3:ListBucket'
+                  - 's3:PutObjectTagging'
+                  - 's3:GetBucketVersioning'
+                  - 's3:GetBucketLocation'
+                  - 's3:GetObjectVersion'
+                Resource: !Sub
+                  - 'arn:aws:s3:::${ARN}*'
+                  - ARN:
+                      Fn::ImportValue:
+                        'Fn::Sub': '${ProjectPrefix}-S3BucketNameOutput'
+              - Effect: 'Allow'
+                Action:
+                  - 's3:ListAllMyBuckets'
+                Resource:
+                  - 'arn:aws:s3:::*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                Resource:
+                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectPrefix}-${LambdaFunctionName}:*'
+              - Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface          
+                Resource: "*"                  
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ProjectPrefix
+      Cors:
+        AllowMethods: "'POST,GET'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  LambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./app
+      FunctionName: !Sub '${ProjectPrefix}-${LambdaFunctionName}'
+      Description: AWS Lambda function for handle API's requests
+      Timeout: 5
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetDocument:
+          Type: Api
+          StageName: !Ref 'ProjectPrefix'
+          Properties:
+            Path: /document/{id}
+            Method: GET
+            RestApiId: !Ref 'ApiGateway'
+        UploadDocument:
+          Type: Api
+          StageName: !Ref 'ProjectPrefix'
+          Properties:
+            Path: /document
+            Method: POST
+            RestApiId: !Ref 'ApiGateway'
+      VpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-DBSecurityGroupOutput'
+        SubnetIds:
+          - Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-VPCSubnet1IdOutput'
+          - Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-VPCSubnet2IdOutput'
+      Environment:
+        Variables:
+          MYSQL_HOST:
+            Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-DBEndpointOutput'
+          MYSQL_USER:
+            Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-DBUserOutput'
+          MYSQL_PORT:
+            Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-DBPortOutput'
+          MYSQL_PASSWORD: '{{resolve:ssm:/temp/dbcreds/tempadmin_unsecure:1}}'
+          MYSQL_DATABASE: !Ref 'MYSQLDatabase'
+          S3_BUCKET:
+            Fn::ImportValue:
+              'Fn::Sub': '${ProjectPrefix}-S3BucketNameOutput'
+    PackageType: Image
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./app
+      DockerTag: python3.9-v1
+
+Outputs:
+  POSTRequestOutput:
+    Description: 'cURL for POST request'
+    Value: !Sub 'curl -X POST -d ''{"key": "value"}'' https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ProjectPrefix}/document'
+  GETRequestOutput:
+    Description: 'cURL for GET request'
+    Value: !Sub 'curl -X GET https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ProjectPrefix}/document/1'
