@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   ProjectPrefix:
     Type: String
-    Default: $$STACKNAME$$
+    Default: ##STACKNAME## #Changes during deployment
     AllowedPattern: ^[a-z0-9.-]+$
     Description: Should be the same as stack name and contains only lowercase letters and numbers.
     ConstraintDescription: Please enter only lowercase letters for ProjectPrefix.
