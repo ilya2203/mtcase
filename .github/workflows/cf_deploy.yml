@@ -14,17 +14,19 @@ jobs:
       run:
         working-directory: ./iac
     steps:
-      - name: Check cf_stack_name pattern
-        run: |
-          if [[ ! "${{ github.event.inputs.cf_stack_name }}" =~ ^[a-z0-9.-]+$ ]]; then
-            echo "Invalid name of stack. It should match the pattern ^[a-z0-9.-]+$"
-            exit 1
-          fi
-      - uses: actions/checkout@v3
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - run: sed "s/##STACKNAME##/${{ inputs.cf_stack_name }}/g" ./CF.yaml && head -n10 ./CF.yaml
-      - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
+      - name: TEST
+        run: ls -la
+      # - name: Check cf_stack_name pattern
+      #   run: |
+      #     if [[ ! "${{ github.event.inputs.cf_stack_name }}" =~ ^[a-z0-9.-]+$ ]]; then
+      #       echo "Invalid name of stack. It should match the pattern ^[a-z0-9.-]+$"
+      #       exit 1
+      #     fi
+      # - uses: actions/checkout@v3
+      # - uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ vars.AWS_REGION }}
+      # - run: sed "s/##STACKNAME##/${{ inputs.cf_stack_name }}/g" ./CF.yaml && head -n10 ./CF.yaml
+      # - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
