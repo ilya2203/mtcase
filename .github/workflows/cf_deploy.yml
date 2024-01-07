@@ -11,6 +11,7 @@ jobs:
   sam_deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3    
       - name: TEST1
         run: ls -la /home/runner/work/
       - name: TEST2
