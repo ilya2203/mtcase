@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: sam_app
+        shell: bash
+        working-directory: ./sam_app
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
