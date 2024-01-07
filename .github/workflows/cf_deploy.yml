@@ -10,6 +10,10 @@ on:
 jobs:
   sam_deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./iac   
     steps:
       - uses: actions/checkout@v3    
       - name: TEST1
@@ -17,7 +21,9 @@ jobs:
       - name: TEST2
         run: ls -la /home/runner/work/mtcase/
       - name: TEST3
-        run: ls -la /home/runner/work/mtcase/mtcase/                
+        run: ls -la /home/runner/work/mtcase/mtcase/
+      - name: TEST4
+        run: ls -la                           
         # working-directory: iac/
       # - name: Check cf_stack_name pattern
       #   run: |
