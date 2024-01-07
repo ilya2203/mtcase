@@ -6,17 +6,12 @@ on:
       sam_app_name:
         description: 'Name of the application to destroy'
         required: true
-  push:
-    paths-ignore:
-      - '.github/**'
 
 jobs:
   sam_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: aws-actions/setup-sam@v2
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}

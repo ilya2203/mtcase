@@ -6,9 +6,6 @@ on:
       cf_stack_name:
         description: 'Name of the stack to destroy'
         required: true
-  push:
-    paths-ignore:
-      - '.github/**'
 
 jobs:
   sam_deploy:
