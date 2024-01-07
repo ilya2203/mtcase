@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: TEST
         run: ls -la
-        working-directory: ./
+        working-directory: iac
       # - name: Check cf_stack_name pattern
       #   run: |
       #     if [[ ! "${{ github.event.inputs.cf_stack_name }}" =~ ^[a-z0-9.-]+$ ]]; then
