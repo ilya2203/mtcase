@@ -7,7 +7,7 @@ Parameters:
 
   ProjectPrefix:
     Type: String
-    Default: 'temp'
+    Default: ##STACKNAME## #Will be changed during deployment
     Description: "MUST BE THE SAME AS ProjectPrefix in CF outputs"
 
   LambdaFunctionName:
