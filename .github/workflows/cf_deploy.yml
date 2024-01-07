@@ -27,5 +27,5 @@ jobs:
             echo "Invalid name of stack. It should match the pattern ^[a-z0-9.-]+$"
             exit 1
           fi
-      - run: sed "s/##STACKNAME##/${{ inputs.cf_stack_name }}/g" ./CF.yaml && head -n10 ./CF.yaml
-      # - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
+      - run: sed "s/##STACKNAME##/${{ inputs.cf_stack_name }}/g" ./CF.yaml
+      - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body ./CF.yaml --capabilities CAPABILITY_NAMED_IAM
