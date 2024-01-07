@@ -10,12 +10,9 @@ on:
 jobs:
   sam_deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./iac
     steps:
       - name: TEST
+        working-directory: ./iac
         run: ls -la
       # - name: Check cf_stack_name pattern
       #   run: |
