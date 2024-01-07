@@ -11,9 +11,13 @@ jobs:
   sam_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: TEST
-        run: ls -la
-        working-directory: iac/
+      - name: TEST1
+        run: ls -la /home/runner/work/
+      - name: TEST2
+        run: ls -la /home/runner/work/mtcase/
+      - name: TEST3
+        run: ls -la /home/runner/work/mtcase/mtcase/                
+        # working-directory: iac/
       # - name: Check cf_stack_name pattern
       #   run: |
       #     if [[ ! "${{ github.event.inputs.cf_stack_name }}" =~ ^[a-z0-9.-]+$ ]]; then
