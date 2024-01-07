@@ -17,4 +17,5 @@ jobs:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      - run: aws cloudformation wait delete-stack --stack-name ${{ inputs.cf_stack_name }}
+      - run: aws cloudformation delete-stack --stack-name ${{ inputs.cf_stack_name }}
+      - run: aws cloudformation wait stack-delete-complete --stack-name --stack-name ${{ inputs.cf_stack_name }}

@@ -28,4 +28,5 @@ jobs:
             exit 1
           fi
       - run: sed -i "s/##STACKNAME##/${{ inputs.cf_stack_name }}/g" ./CF.yaml
-      - run: aws cloudformation wait create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body file://CF.yaml --capabilities CAPABILITY_NAMED_IAM
+      - run: aws cloudformation create-stack --stack-name ${{ inputs.cf_stack_name }} --template-body file://CF.yaml --capabilities CAPABILITY_NAMED_IAM
+      - run: aws cloudformation wait stack-create-complete --stack-name ${{ inputs.cf_stack_name }}
